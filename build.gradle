@@ -1,17 +1,16 @@
-group 'ray'
-version '0.1.0'
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
+plugins {
+    id 'java'
 }
+
+group 'ray'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
-
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
