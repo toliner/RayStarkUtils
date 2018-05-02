@@ -1,0 +1,17 @@
+group 'ray'
+version '0.1.0'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+
+}
