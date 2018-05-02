@@ -1,11 +1,11 @@
 package ray.ticktest;
 
-import ray.tick.ITickControlled;
-import ray.tick.TickManager;
+import ray.util.tick.ITickControlled;
+import ray.util.tick.TickManager;
 
 public class Main {
     public static void main(String[] args){
-        TickManager manager = new TickManager(500);
+        TickManager manager = new TickManager(1000);
         manager.add(new TickTest());
 
         try {
