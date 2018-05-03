@@ -22,7 +22,7 @@ public class TickManager {
             }
         };
 
-        this.currentTick = 0;
+        this.currentTick = Long.MIN_VALUE;
         tickControlledList = new LinkedList<>();
     }
 
