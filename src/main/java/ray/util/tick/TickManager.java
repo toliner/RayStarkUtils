@@ -4,18 +4,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TickManager {
     private long currentTick = 0;
     private long tps = 0;
-    private boolean isTpsChecking;
     private final long tickRate;
     private final long delay;
     private final List<ITickWorker> tickWorkers = new LinkedList<>();
     private final Timer timer = new Timer();
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public TickManager(long tickRate, long delay) {
         this.tickRate = tickRate;
@@ -61,31 +57,22 @@ public class TickManager {
 
     public void start() {
         this.timer.schedule(new TickHandler(this, tickRate, delay, 0), delay);
-        isTpsChecking = true;
-        executor.execute(new TpsChecker());
+        this.timer.scheduleAtFixedRate(new TpsChecker(), 1000, 1000);
     }
 
     public void stop() {
-        //この時点でTimerのスレッドは停止するのでスレッドの排他性を気にする必要はない、はず
         this.timer.cancel();
-        isTpsChecking = false;
         this.tps = 0;
     }
 
-    private class TpsChecker implements Runnable {
+    private class TpsChecker extends TimerTask {
+
+        private long oldTick = 0;
+
         @Override
         public void run() {
-            try {
-                long oldTick = currentTick;
-                while (isTpsChecking) {
-                    Thread.sleep(1000);
-                    tps = currentTick - oldTick;
-                    if (tps < 0) tps += Long.MAX_VALUE;
-                    oldTick = currentTick;
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            tps = currentTick - oldTick;
+            oldTick = currentTick;
         }
     }
 
