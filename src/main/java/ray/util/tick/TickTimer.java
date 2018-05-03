@@ -1,18 +1,22 @@
 package ray.util.tick;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public abstract class TickTimer {
+    private boolean isRunning;
     private long tickRate;
     private long minSleep;
 
-    private boolean timerStarted;
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public TickTimer(long tickRate, long minSleep) {
-        if (tickRate < 0) throw new IllegalArgumentException("tickRate must not be negative.");
+        if (tickRate < 1) throw new IllegalArgumentException("tickRate must be positive.");
         if (minSleep < 0) throw new IllegalArgumentException("minSleep must not be negative.");
 
         this.tickRate = tickRate;
         this.minSleep = minSleep;
-        timerStarted = false;
+        isRunning = false;
     }
 
     public TickTimer(long tickRate) {
@@ -26,14 +30,27 @@ public abstract class TickTimer {
     public abstract void handle();
 
     public void start() {
-        timerStarted = true;
-        new Thread(() -> {
+        isRunning = true;
+        executor.execute(new Handler());
+    }
+
+    public synchronized void stop() {
+        isRunning = false;
+    }
+
+    public long getTickRate() {
+        return this.tickRate;
+    }
+
+    private class Handler implements Runnable {
+        @Override
+        public void run() {
             long oldTime;
             long newTime;
             long sleepTime;
 
             try {
-                while (timerStarted) {
+                while (isRunning) {
 
                     oldTime = System.currentTimeMillis();
                     handle();
@@ -46,15 +63,7 @@ public abstract class TickTimer {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }).start();
-    }
-
-    public void stop() {
-        timerStarted = false;
-    }
-
-    public long getTickRate() {
-        return this.tickRate;
+        }
     }
 
 }
