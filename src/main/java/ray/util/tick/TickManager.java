@@ -13,15 +13,15 @@ public class TickManager {
 
     private boolean TPSChecking;
 
-    public TickManager(long tickRate, long minSleepTime){
-        timer = new TickTimer(tickRate, minSleepTime){
+    public TickManager(long tickRate, long minSleepTime) {
+        timer = new TickTimer(tickRate, minSleepTime) {
             @Override
-            public void handle(){
-                if(!tickControlledList.isEmpty())
-                    for(ITickControlled e : tickControlledList)
+            public void handle() {
+                if (!tickControlledList.isEmpty())
+                    for (ITickControlled e : tickControlledList)
                         e.done();
 
-                if(currentTick == Long.MAX_VALUE){
+                if (currentTick == Long.MAX_VALUE) {
                     currentTick = 0;
                     return;
                 }
@@ -34,51 +34,62 @@ public class TickManager {
         tickControlledList = new LinkedList<>();
     }
 
-    public TickManager(long tickRate){
+    public TickManager(long tickRate) {
         this(tickRate, 0);
     }
 
-    public TickManager(){
+    public TickManager() {
         this(1000, 0);
     }
 
 
-    public void add(ITickControlled e){
+    public void add(ITickControlled e) {
         tickControlledList.add(e);
     }
-    public boolean remove(ITickControlled e){
+
+    public boolean remove(ITickControlled e) {
         return tickControlledList.remove(e);
     }
-    public boolean isContain(ITickControlled e){
+
+    public boolean isContain(ITickControlled e) {
         return tickControlledList.contains(e);
     }
-    public boolean isEmpty(){ return tickControlledList.isEmpty(); }
 
-    public long getCurrentTick(){ return this.currentTick; }
+    public boolean isEmpty() {
+        return tickControlledList.isEmpty();
+    }
 
-    public long getTickRate(){ return timer.getTickRate(); }
+    public long getCurrentTick() {
+        return this.currentTick;
+    }
 
-    public long getTPS(){ return this.tps; }
+    public long getTickRate() {
+        return timer.getTickRate();
+    }
 
-    public void start(){
+    public long getTPS() {
+        return this.tps;
+    }
+
+    public void start() {
         this.timer.start();
         TPSChecking = true;
         new Thread(() -> {
-            try{
+            try {
                 long oldTick = currentTick;
-                while(TPSChecking){
+                while (TPSChecking) {
                     Thread.sleep(1000);
                     tps = currentTick - oldTick;
-                    if(tps < 0) tps += Long.MAX_VALUE;
+                    if (tps < 0) tps += Long.MAX_VALUE;
                     oldTick = currentTick;
                 }
-            }catch(InterruptedException e){
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }).start();
     }
 
-    public void stop(){
+    public void stop() {
         this.timer.stop();
         TPSChecking = false;
         this.tps = 0;

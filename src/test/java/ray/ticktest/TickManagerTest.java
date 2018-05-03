@@ -5,15 +5,16 @@ import ray.util.tick.TickManager;
 
 public class TickManagerTest {
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         TickManager manager = new TickManager(1000);
         manager.add(new ITickControlled() {
-            int i=0;
-                @Override
-                public void done(){
-                    System.out.println(i++);
-                }
-            });
+            int i = 0;
+
+            @Override
+            public void done() {
+                System.out.println(i++);
+            }
+        });
 
         try {
             manager.start();
@@ -23,7 +24,7 @@ public class TickManagerTest {
             manager.start();
             Thread.sleep(5000);
             manager.stop();
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

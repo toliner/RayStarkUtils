@@ -4,13 +4,14 @@ import ray.util.tick.ITickControlled;
 import ray.util.tick.TickManager;
 
 public class TPSTest {
-    private static void main(String[] args){
+    private static void main(String[] args) {
         TickManager manager = new TickManager(20);
         manager.add(new ITickControlled() {
             long oldTick = manager.getCurrentTick();
+
             @Override
             public void done() {
-                if(20 * (manager.getCurrentTick()-oldTick) < 1000) return;
+                if (20 * (manager.getCurrentTick() - oldTick) < 1000) return;
 
                 System.out.println(manager.getTPS());
                 oldTick = manager.getCurrentTick();
@@ -27,7 +28,7 @@ public class TPSTest {
             Thread.sleep(10000);
             manager.stop();
 
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
