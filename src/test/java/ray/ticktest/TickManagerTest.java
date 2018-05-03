@@ -1,17 +1,17 @@
 package ray.ticktest;
 
-import ray.util.tick.ITickControlled;
+import ray.util.tick.ITickWorker;
 import ray.util.tick.TickManager;
 
 public class TickManagerTest {
 
     public static void main(String[] args) {
         TickManager manager = new TickManager(1000);
-        manager.add(new ITickControlled() {
+        manager.add(new ITickWorker() {
             int i = 0;
 
             @Override
-            public void done() {
+            public void onTick() {
                 System.out.println(i++);
             }
         });

@@ -1,16 +1,16 @@
 package ray.ticktest;
 
-import ray.util.tick.ITickControlled;
+import ray.util.tick.ITickWorker;
 import ray.util.tick.TickManager;
 
 public class TPSTest {
     private static void main(String[] args) {
         TickManager manager = new TickManager(20);
-        manager.add(new ITickControlled() {
+        manager.add(new ITickWorker() {
             long oldTick = manager.getCurrentTick();
 
             @Override
-            public void done() {
+            public void onTick() {
                 if (20 * (manager.getCurrentTick() - oldTick) < 1000) return;
 
                 System.out.println(manager.getTPS());
