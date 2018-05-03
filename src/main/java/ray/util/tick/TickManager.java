@@ -2,6 +2,8 @@ package ray.util.tick;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,27 +11,15 @@ public class TickManager {
     private long currentTick = 0;
     private long tps = 0;
     private boolean isTpsChecking;
+    private final long tickRate;
+    private final long delay;
     private final List<ITickWorker> tickWorkers = new LinkedList<>();
-    private final TickTimer timer;
+    private final Timer timer = new Timer();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public TickManager(long tickRate, long minSleepTime) {
-        timer = new TickTimer(tickRate, minSleepTime) {
-            @Override
-            public void handle() {
-                synchronized (tickWorkers) {
-                    if (!tickWorkers.isEmpty())
-                        for (ITickWorker e : tickWorkers)
-                            e.onTick();
-                }
-
-                if (currentTick == Long.MAX_VALUE) {
-                    currentTick = 0;
-                    return;
-                }
-                currentTick++;
-            }
-        };
+    public TickManager(long tickRate, long delay) {
+        this.tickRate = tickRate;
+        this.delay = delay;
     }
 
     public TickManager(long tickRate) {
@@ -61,8 +51,8 @@ public class TickManager {
         return this.currentTick;
     }
 
-    public synchronized long getTickRate() {
-        return timer.getTickRate();
+    public long getTickRate() {
+        return tickRate;
     }
 
     public synchronized long getTPS() {
@@ -70,19 +60,19 @@ public class TickManager {
     }
 
     public void start() {
-        this.timer.start();
+        this.timer.schedule(new TickHandler(this, tickRate, delay, 0), delay);
         isTpsChecking = true;
-        executor.execute(new TpcChecker());
+        executor.execute(new TpsChecker());
     }
 
     public void stop() {
         //この時点でTimerのスレッドは停止するのでスレッドの排他性を気にする必要はない、はず
-        this.timer.stop();
+        this.timer.cancel();
         isTpsChecking = false;
         this.tps = 0;
     }
 
-    private class TpcChecker implements Runnable {
+    private class TpsChecker implements Runnable {
         @Override
         public void run() {
             try {
@@ -96,6 +86,38 @@ public class TickManager {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private class TickHandler extends TimerTask {
+        private final TickManager manager;
+        private final long tickRate;
+        private final long delay;
+        private final long currentTick;
+
+        TickHandler(TickManager manager, long tickRate, long delay, long currentTick) {
+            this.manager = manager;
+            this.tickRate = tickRate;
+            this.delay = delay;
+            this.currentTick = currentTick;
+        }
+
+        @Override
+        public void run() {
+            manager.currentTick = currentTick;
+            synchronized (manager.tickWorkers) {
+                for (ITickWorker worker : manager.tickWorkers) {
+                    worker.onTick();
+                }
+            }
+            long execTime = System.currentTimeMillis() - this.scheduledExecutionTime();
+            long nextTick;
+            if (currentTick == Long.MAX_VALUE) {
+                nextTick = 0;
+            } else {
+                nextTick = currentTick + 1;
+            }
+            manager.timer.schedule(new TickHandler(manager, tickRate, delay, nextTick), tickRate - execTime + delay);
         }
     }
 }
