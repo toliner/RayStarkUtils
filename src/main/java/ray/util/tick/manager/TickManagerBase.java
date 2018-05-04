@@ -69,7 +69,7 @@ public abstract class TickManagerBase implements ITickManager {
 
     @Override
     public void start() {
-        this.timer.schedule(new TickHandler(this, tickRate, delay, 0), delay);
+        this.timer.schedule(new TickHandler(this, 0), delay);
         this.timer.scheduleAtFixedRate(new TpsChecker(), 1000, 1000);
     }
 
@@ -92,14 +92,10 @@ public abstract class TickManagerBase implements ITickManager {
 
     protected class TickHandler extends TimerTask {
         private final TickManagerBase manager;
-        private final long tickRate;
-        private final long delay;
         private final long currentTick;
 
-        TickHandler(TickManagerBase manager, long tickRate, long delay, long currentTick) {
+        TickHandler(TickManagerBase manager, long currentTick) {
             this.manager = manager;
-            this.tickRate = tickRate;
-            this.delay = delay;
             this.currentTick = currentTick;
         }
 
@@ -118,7 +114,7 @@ public abstract class TickManagerBase implements ITickManager {
             } else {
                 nextTick = currentTick + 1;
             }
-            manager.timer.schedule(new TickHandler(manager, tickRate, delay, nextTick), tickRate - execTime + delay);
+            manager.timer.schedule(new TickHandler(manager, nextTick), tickRate - execTime + delay);
         }
     }
 }
