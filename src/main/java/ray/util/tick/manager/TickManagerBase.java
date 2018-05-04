@@ -3,6 +3,7 @@ package ray.util.tick.manager;
 import ray.util.tick.api.ITickManager;
 import ray.util.tick.api.ITickWorker;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -20,7 +21,7 @@ public abstract class TickManagerBase implements ITickManager {
         this.tickRate = tickRate;
         this.delay = delay;
         workers.clear();
-        tickWorkers = workers;
+        tickWorkers = Collections.synchronizedList(workers);
     }
 
     protected TickManagerBase(long tickRate, List<ITickWorker> workers) {
