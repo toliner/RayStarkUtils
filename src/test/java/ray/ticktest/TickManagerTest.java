@@ -1,12 +1,13 @@
 package ray.ticktest;
 
-import ray.util.tick.ITickWorker;
-import ray.util.tick.TickManager;
+import ray.util.tick.api.ITickManager;
+import ray.util.tick.api.ITickWorker;
+import ray.util.tick.manager.ArrayListTickManager;
 
 public class TickManagerTest {
 
     public static void main(String[] args) {
-        TickManager manager = new TickManager(1000);
+        ITickManager manager = new ArrayListTickManager(1000);
         manager.add(new ITickWorker() {
             int i = 0;
 
